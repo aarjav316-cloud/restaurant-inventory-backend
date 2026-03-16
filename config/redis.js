@@ -26,3 +26,4 @@ const connectRedis = async () => {
 }
 
 
+export default connectRedis
