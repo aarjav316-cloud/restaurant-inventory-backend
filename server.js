@@ -14,8 +14,8 @@ app.use(express.json())
 app.use(cors())
 app.use(morgan("dev"))
 
-connectDB()
-connectRedis()
+connectDB();
+connectRedis();
 
 app.get("/" , (req,res) => {
     res.send(`server running on port ${PORT}`)
