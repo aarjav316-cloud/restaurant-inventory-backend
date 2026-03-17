@@ -74,4 +74,38 @@ export const getInventory = async (req,res) => {
 }
 
 
+export const updateInventory = async (req,res) => {
+    try {
+
+        const {id} = req.params;
+        const {quantity} = req.body;
+
+        const updated = await Inventory.findByIdAndUpdate(
+            id,
+            {quantity},
+            {new:true}
+        )
+
+        if(!updated){
+            return res.status(404).json({
+                success:false,
+                message:"item not found"
+            })
+        }
+
+        await redisClient.del("inventory:all")
+
+        return res.status(200).json({
+            success:true,
+            message:"Inventory updated",
+            data:updated
+        })
+        
+    } catch (error) {
+        return res.json({
+            success:false,
+            message:error.message
+        })
+    }
+}
 
