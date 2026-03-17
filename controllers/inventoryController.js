@@ -1,5 +1,6 @@
 import Inventory from "../models/Inventory.js";
 import { redisClient } from "../config/redis.js";
+import Transaction from "../models/Transaction.js";
 
 export const addInventory = async(req,res) => {
     try {
@@ -99,6 +100,58 @@ export const updateInventory = async (req,res) => {
             success:true,
             message:"Inventory updated",
             data:updated
+        })
+        
+    } catch (error) {
+        return res.json({
+            success:false,
+            message:error.message
+        })
+    }
+}
+
+
+export const useMaterial = async(req,res) => {
+    try {
+
+        const {itemName , quantity} = req.body;
+
+        if(!itemName || !quantity){
+            return res.status(400).json({
+                success:false,
+                message:"Item and quantity required"
+            })
+        }
+
+        const item = await Inventory.findOne({itemName})
+
+        if(!item){
+            return res.status(404).json({
+                success:false,
+                message:"Item not found"
+            })
+        }
+
+        if(item.quantity < quantity){
+            return res.status(400).json({
+                success:false,
+                message:"Not enough stock"
+            })
+        }
+
+        item.quantity -= quantity;
+        await item.save()
+
+        await Transaction.create({
+            item:itemName,
+            quantity,
+            action: "USE",
+            performedBy:req.user.id
+        })
+
+        return res.json({
+            success:true,
+            message:"Material used successfully"
         })
         
     } catch (error) {
