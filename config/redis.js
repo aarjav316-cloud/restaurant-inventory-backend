@@ -1,6 +1,6 @@
 import { createClient } from "redis";
 
-let redisClient
+export let redisClient
 
 const connectRedis = async () => {
     try {
@@ -27,3 +27,4 @@ const connectRedis = async () => {
 
 
 export default connectRedis
+
