@@ -6,6 +6,8 @@ import dotenv from 'dotenv'
 import connectRedis from './config/redis.js'
 import connectDB from './config/db.js'
 
+import authRoutes from './routes/auth.routes.js'
+
 dotenv.config()
 
 const app = express()
@@ -16,6 +18,9 @@ app.use(morgan("dev"))
 
 connectDB();
 connectRedis();
+
+
+app.use('/api/auth' , authRoutes)
 
 app.get("/" , (req,res) => {
     res.send(`server running on port ${PORT}`)
