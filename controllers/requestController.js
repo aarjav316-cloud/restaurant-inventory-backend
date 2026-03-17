@@ -65,4 +65,81 @@ export const getRequests = async (req, res) => {
         message: error.message
       })
     }
+}
+
+export const updateRequestStatus = async (req, res) => {
+    try {
+  
+      const { id } = req.params
+      const { status } = req.body // "approved" or "rejected"
+  
+      if (!status) {
+        return res.status(400).json({
+          success: false,
+          message: "Status is required"
+        })
+      }
+  
+      const request = await Request.findById(id)
+  
+      if (!request) {
+        return res.status(404).json({
+          success: false,
+          message: "Request not found"
+        })
+      }
+  
+      if (request.status !== "pending") {
+        return res.status(400).json({
+          success: false,
+          message: "Request already processed"
+        })
+      }
+  
+      // 🔥 IF APPROVED
+      if (status === "approved") {
+  
+        // 1️⃣ update inventory
+        let item = await Inventory.findOne({ itemName: request.item })
+  
+        if (item) {
+          item.quantity += request.quantity
+          await item.save()
+        } else {
+          // if item doesn't exist → create it
+          item = await Inventory.create({
+            itemName: request.item,
+            quantity: request.quantity,
+            unit: "kg" // default (can improve later)
+          })
+        }
+  
+        // 2️⃣ create transaction
+        await Transaction.create({
+          item: request.item,
+          quantity: request.quantity,
+          action: "ADD",
+          performedBy: req.user.id
+        })
+  
+        // 3️⃣ clear cache
+        await redisClient.del("inventory:all")
+      }
+  
+      // update request status
+      request.status = status
+      await request.save()
+  
+      return res.status(200).json({
+        success: true,
+        message: `Request ${status} successfully`,
+        data: request
+      })
+  
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message
+      })
+    }
   }
