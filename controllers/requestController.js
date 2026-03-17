@@ -71,7 +71,7 @@ export const updateRequestStatus = async (req, res) => {
     try {
   
       const { id } = req.params
-      const { status } = req.body // "approved" or "rejected"
+      const { status } = req.body 
   
       if (!status) {
         return res.status(400).json({
@@ -96,25 +96,23 @@ export const updateRequestStatus = async (req, res) => {
         })
       }
   
-      // 🔥 IF APPROVED
+      
       if (status === "approved") {
   
-        // 1️⃣ update inventory
         let item = await Inventory.findOne({ itemName: request.item })
   
         if (item) {
           item.quantity += request.quantity
           await item.save()
         } else {
-          // if item doesn't exist → create it
+          
           item = await Inventory.create({
             itemName: request.item,
             quantity: request.quantity,
-            unit: "kg" // default (can improve later)
+            unit: "kg" 
           })
         }
-  
-        // 2️⃣ create transaction
+
         await Transaction.create({
           item: request.item,
           quantity: request.quantity,
@@ -122,11 +120,11 @@ export const updateRequestStatus = async (req, res) => {
           performedBy: req.user.id
         })
   
-        // 3️⃣ clear cache
+        
         await redisClient.del("inventory:all")
       }
   
-      // update request status
+      
       request.status = status
       await request.save()
   

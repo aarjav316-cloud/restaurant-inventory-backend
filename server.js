@@ -8,6 +8,7 @@ import connectDB from './config/db.js'
 
 import authRoutes from './routes/auth.routes.js'
 import inventoryRoutes from './routes/inventory.routes.js'
+import requestRoutes from "./routes/request.routes.js"
 
 dotenv.config()
 
@@ -23,6 +24,7 @@ connectRedis();
 
 app.use('/api/auth' , authRoutes)
 app.use('/api/inventory' , inventoryRoutes)
+app.use('/api/request' , requestRoutes)
 
 app.get("/" , (req,res) => {
     res.send(`server running on port ${PORT}`)
