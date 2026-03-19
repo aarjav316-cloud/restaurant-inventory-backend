@@ -6,18 +6,18 @@ import User from '../models/User.js';
 
         const auth = req.headers.authorization
 
-        const token = auth.split(" ")[1];
-
-        if(!token){
-            return res.json({
-                success:false,
-                message:"token not found"
-            })
+        if (!auth || !auth.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
+                message: "Not authorized, token missing or invalid format"
+            });
         }
+
+        const token = auth.split(" ")[1];
 
         const decoded = jwt.verify(token , process.env.JWT_SECRET)
 
-        const user = await User.find(decoded.id)
+        const user = await User.findById(decoded.id)
 
         if(!user){
             return res.json({

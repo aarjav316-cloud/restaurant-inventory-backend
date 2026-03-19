@@ -149,6 +149,8 @@ export const useMaterial = async(req,res) => {
             performedBy:req.user.id
         })
 
+        await redisClient.del("inventory:all")
+
         return res.json({
             success:true,
             message:"Material used successfully"

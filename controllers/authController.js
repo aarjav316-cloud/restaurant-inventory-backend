@@ -2,110 +2,110 @@ import User from "../models/User.js";
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
-export const register = async (req,res) => {
+export const register = async (req, res) => {
     try {
 
-        const {name , email , password , role} = req.body;
+        const { name, email, password, role } = req.body;
 
-        if(!name || !email || !password || !role){
+        if (!name || !email || !password || !role) {
             return res.status(400).json({
-                success:false,
-                message:"insufficient credentials"
+                success: false,
+                message: "insufficient credentials"
             })
         }
 
-        const existingUser = await User.findOne({email});
+        const existingUser = await User.findOne({ email });
 
-        if(existingUser){
+        if (existingUser) {
             return res.status(400).json({
-                success:false,
-                message:"user already exists"
+                success: false,
+                message: "user already exists"
             })
         }
 
-         const hashPassword = await bcrypt.hash(password , 10);
-         
-         const user = await User.create({
+        const hashPassword = await bcrypt.hash(password, 10);
+
+        const user = await User.create({
             name,
             email,
             role,
-            password:hashPassword
-         })
+            password: hashPassword
+        })
 
-         const userResponse = {
+        const userResponse = {
             _id: user._id,
             name: user.name,
             email: user.email,
             role: user.role
-          }
+        }
 
-         return res.status(201).json({
-            success:true,
-            message:"user created successfully",
-            
-         })
-        
+        return res.status(201).json({
+            success: true,
+            message: "user created successfully",
+
+        })
+
     } catch (error) {
         return res.status(500).json({
-            success:false,
-            message:error.message
+            success: false,
+            message: error.message
         })
     }
 }
 
 
-export const login = async (req,res) => {
+export const login = async (req, res) => {
     try {
 
-        const {email , password } = req.body;
+        const { email, password } = req.body;
 
-        if(!email || !password){
+        if (!email || !password) {
             return res.status(400).json({
-                success:false,
-                message:"insufficient details"
+                success: false,
+                message: "insufficient details"
             })
         }
 
-        const user = await User.findOne(email)
+        const user = await User.findOne({ email: email })
 
-        if(!user){
+        if (!user) {
             return res.status(404).json({
-                success:false,
-                message:"user does not exists"
+                success: false,
+                message: "user does not exists"
             })
         }
 
-        const isMatch = await bcrypt.compare(password , user.password)
+        const isMatch = await bcrypt.compare(password, user.password)
 
-        if(!isMatch){
+        if (!isMatch) {
             return res.status(401).json({
-                success:false,
-                message:"incorrect password enter a correct one"
+                success: false,
+                message: "incorrect password enter a correct one"
             })
         }
 
-        const token =  jwt.sign(
-            {id:user._id , role:user.role},
+        const token = jwt.sign(
+            { id: user._id, role: user.role },
             process.env.JWT_SECRET,
-            {expiresIn:"7d"}
+            { expiresIn: "7d" }
         )
 
         return res.json({
-            success:true,
-            message:"user logged in successfully",
+            success: true,
+            message: "user logged in successfully",
             token,
-            user:{
-                _id:user._id,
-                name:user.name,
-                email:user.email,
-                role:user.role
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
             }
         })
-        
+
     } catch (error) {
         return res.status(500).json({
-            success:false,
-            message:error.message
+            success: false,
+            message: error.message
         })
     }
 }
